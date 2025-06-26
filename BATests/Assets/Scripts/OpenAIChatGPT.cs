@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class OpenAIChatGPT : MonoBehaviour
 {
-    private string apiKey = "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"; // Replace with an actual API key
+    private string apiKey = ""; // Replace with an actual API key
     private string apiUrl = "https://api.openai.com/v1/chat/completions";
 
     public IEnumerator GetChatGPTResponse(List<ChatMessage> messages, System.Action<string> callback)
@@ -24,7 +24,7 @@ public class OpenAIChatGPT : MonoBehaviour
             function = new
             {
                 name = "switch_prompt",
-                description = "Wechselt den System Prompt, wenn alle nötigen Infos gesammelt wurden.",
+                description = "Switches the System Prompt. Call this Function when important information of current System Prompt have been collected and Prompt is saturated.",
                 parameters = new
                 {
                     type = "object",
