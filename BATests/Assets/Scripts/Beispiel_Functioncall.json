@@ -1,0 +1,46 @@
+Response: {
+  "id": "chatcmpl-BmjdTobk8n6aSaHBPEpgzg87tazX6",
+  "object": "chat.completion",
+  "created": 1750954867,
+  "model": "gpt-4.1-2025-04-14",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_65HUKTPgVAIqVKcy9ZjKifJ9",
+            "type": "function",
+            "function": {
+              "name": "switch_prompt",
+              "arguments": "{\"summary\":\"Frank lernt Französisch, weil er die Sprache schön findet. Er hat vor vier Jahren Französisch in der Schule gelernt. Frank möchte besonders auf Reisen, beim Verstehen von französischen Filmen und im Gespräch mit seiner französischen Familie besser werden. Sein Hauptfokus liegt darauf, selbst besser sprechen zu können. Bisher wurden keine spezifischen Lieblingsthemen oder großen Schwierigkeiten beim Sprechen genannt.\",\"level\":\"A2\"}"
+            }
+          }
+        ],
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1057,
+    "completion_tokens": 97,
+    "total_tokens": 1154,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_b3f1157249"
+}
