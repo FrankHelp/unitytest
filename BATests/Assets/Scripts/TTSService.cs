@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class TTSService : MonoBehaviour 
 {
-    public string serverUrl = "http://localhost:65432/synthesize";
+    public string serverUrl = "http://192.168.0.102:65432/synthesize";
     private AudioSource audioSource;
     private List<AudioClip> queuedClips = new List<AudioClip>();
     private int pendingRequests = 0; // Damit erst abspielt wenn alle da, und nicht einfach die kürzeste nachricht zuerst.
@@ -16,14 +16,17 @@ public class TTSService : MonoBehaviour
         queuedClips = new List<AudioClip>();
     }
 
+    public void announceParts(int requests)
+    {
+        pendingRequests = requests;
+    }
+
     public void RequestTTSde(string text) 
     {
-        pendingRequests++; // Neue Anfrage gestartet
         StartCoroutine(PostTTSRequestDeutsch(text));
     }
     public void RequestTTSfr(string text)
     {
-        pendingRequests++; // Neue Anfrage gestartet
         StartCoroutine(PostTTSRequest(text));
     }
 

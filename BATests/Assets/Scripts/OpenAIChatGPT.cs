@@ -70,7 +70,7 @@ public class OpenAIChatGPT : MonoBehaviour
                                     language = new 
                                     { 
                                         type = "string",
-                                        @enum = new[] { "de", "fr" }
+                                        @enum = new[] { "de", "es" } // hier fr
                                     },
                                     text = new { type = "string" }
                                 },

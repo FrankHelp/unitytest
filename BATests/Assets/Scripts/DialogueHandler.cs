@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using Newtonsoft.Json; // Use Newtonsoft.Json
+using ChatGPTIntegration;
 
 public class DialogueHandler : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class DialogueHandler : MonoBehaviour
 
     private OpenAIChatGPT chatGPT;
     private TTSService tts;
-    [SerializeField] public WhisperTranscriber _transcriber;
+    private WhisperTranscriber _transcriber;
 
     private bool isRecording;
     private AudioClip recordedClip;
@@ -37,6 +38,7 @@ public class DialogueHandler : MonoBehaviour
     {
         tts = gameObject.AddComponent<TTSService>();
         chatGPT = gameObject.AddComponent<OpenAIChatGPT>();
+        _transcriber = gameObject.AddComponent<WhisperTranscriber>();
         prompts = new PromptHandler();
 
         // Erstelle das Dictionary mit den Nachrichten
@@ -48,7 +50,7 @@ public class DialogueHandler : MonoBehaviour
 
     public void sendMessage(string userPrompt)
     {
-        if(prompts.CheckForPromptSwitch())
+        if(userPrompt == null)
         {
             messages.Add(new ChatMessage("system", prompts.GetCurrentSystemPrompt()));
             messages.Add(new ChatMessage("user", prompts.GetCurrentUserPrompt()));
@@ -64,32 +66,59 @@ public class DialogueHandler : MonoBehaviour
     void OnResponseReceived(string jsonResponse)
     {
          // Deserialisiere die JSON-Antwort
-        var response = JsonConvert.DeserializeObject<OpenAIStructuredResponse>(jsonResponse);
+
+        // ---------------------------------------------------------------
+        var parts = ResponseDeserializer.GetParts(jsonResponse);
         string full_response = "";
-        var contentString = response.choices[0].message.content;
-        var languageParts = JsonConvert.DeserializeObject<LanguageParts>(contentString);
-        // Debug.Log("response: " + languageParts);
-        // Gehe alle parts durch
-        foreach (var part in languageParts.parts)
+        if (parts != null)
         {
-            if (part.language == "de")
+            tts.announceParts(parts.Count);
+            foreach (var part in parts)
             {
-                tts.RequestTTSde(part.text); // Text auf Deutsch an TTS senden
-                full_response += part.text;
+                if (part.language == "de")
+                {
+                    tts.RequestTTSde(part.text); // Text auf Deutsch an TTS senden
+                    full_response += part.text;
+                }
+                else if (part.language == "fr") // HIER fr
+                {
+                    tts.RequestTTSfr(part.text); // Text auf Französisch an TTS senden
+                    full_response += part.text;
+                }
+                else
+                {
+                    Debug.LogWarning($"Unbekannte Sprache: {part.language}");
+                }
             }
-            else if (part.language == "fr")
-            {
-                tts.RequestTTSfr(part.text); // Text auf Französisch an TTS senden
-                full_response += part.text;
-            }
-            else
-            {
-                Debug.LogWarning($"Unbekannte Sprache: {part.language}");
-            }
+            messages.Add(new ChatMessage("assistant", full_response));
+            Debug.Log("ChatGPT Response: " + full_response);
         }
 
-        messages.Add(new ChatMessage("assistant", full_response));
-        Debug.Log("ChatGPT Response: " + full_response);
+        // Get tool calls
+        var toolCalls = ResponseDeserializer.GetToolCalls(jsonResponse);
+        if (toolCalls != null)
+        {
+            foreach (var toolCall in toolCalls)
+            {
+                if(toolCall.function.name == "switch_prompt")
+                {
+                    prompts.switch_prompt();
+                    if(parts == null)
+                    {
+                        sendMessage(null);
+                    }
+                }
+                Debug.Log($"Tool Call: {toolCall.function.name}, Arguments: {toolCall.function.arguments}");
+                
+                // Optionally deserialize arguments into a specific class
+                // var arguments = ResponseDeserializer.GetToolCallArguments<YourArgumentClass>(toolCall);
+                // if (arguments != null)
+                // {
+                //     // Use arguments
+                // }
+            }
+        }
+        // -----------------------------------
     }
 
     void ToggleRecording()
@@ -131,35 +160,4 @@ public class DialogueHandler : MonoBehaviour
         Debug.LogError("Transkription fehlgeschlagen: " + error);
         // Fehlerbehandlung (z. B. Fehlermeldung anzeigen)
     }
-}
-[System.Serializable]
-public class OpenAIStructuredResponse
-{
-    public List<Choice> choices { get; set; }
-}
-
-[System.Serializable]
-public class Choice
-{
-    public Message message { get; set; }
-}
-
-[System.Serializable]
-public class Message
-{
-    public string role { get; set; }
-    public string content { get; set; } // Achtung: Hier wird das JSON-Schema erwartet!
-}
-
-[System.Serializable]
-public class LanguageParts
-{
-    public List<Part> parts { get; set; }
-}
-
-[System.Serializable]
-public class Part
-{
-    public string language { get; set; }
-    public string text { get; set; }
 }
